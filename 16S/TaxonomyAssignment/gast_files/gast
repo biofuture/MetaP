@@ -36,6 +36,7 @@
 use strict;
 use warnings;
 #use lib "/class/stamps-software/bin";
+use lib "/Users/jiangxiaotao/Documents/MetaP/16S/TaxonomyAssignment/gast_files";
 use Taxonomy;
 
 #######################################
