@@ -1,0 +1,5 @@
+../16S/TaxonomyAssignment/gast_files/gast -in clone43.fa -ref ../DB/refv6.fa -rtax ../DB/refv6.tax -out clone43test (Tue Oct  9 15:48:48 2012)
+mothur "#unique.seqs(fasta=clone43.fa);"
+/Users/jiangxiaotao/Documents/MetaP/bin/usearch6.0.307_i86osx32 -db ../DB/refv6.fa  -gapopen 6I/1E -usearch_global clone43.unique.fa -strand plus -uc clone43.unique.fa.uc -maxaccepts 15 -maxrejects 200 -id 0.8
+Assigning taxonomy
+rm clone43.unique.fa.uc
