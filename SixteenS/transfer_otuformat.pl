@@ -4,6 +4,9 @@ BEGIN{
 }
 use strict;    
 use SixteenS::Tools::OtuFormatTransfer;
+if($#ARGV < 0){
+    die "perl $0 <.fa> <.name> <tsc> <out>\n";
+}
 #die "perl $0";
 my @stotu;
 transfer_tscotu($ARGV[0],$ARGV[1],$ARGV[2],\@stotu);
