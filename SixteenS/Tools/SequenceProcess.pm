@@ -31,7 +31,7 @@ sub fetch_fastainfo{
 
 
 sub split_file{
-    ##split_file split file into n parts based on line
+    ##split_file split fastq file into n parts based on line
     ##the output file were in the same dir with the $file
     my ($file, $num) = @_;
     die "Cant not find $file $!\n" unless open(I,"$file");
@@ -39,7 +39,8 @@ sub split_file{
     my $tem = `wc -l $file`;
     chomp($tem);
     $totallines = (split(/\s+/,$tem))[1];
-    my $line = int( $totallines / $num ); 
+
+    my $line = int( $totallines / ($num * 4 ) ); 
     #my $restline = $totallines - $num * $line;
     
     for (my $i = 1; $i < $num; $i++)
@@ -48,7 +49,7 @@ sub split_file{
         die "Can not write to $outf $!\n" unless open(T,">$outf");
         my $flag = 1;
         my $seq = "";
-        while($flag <= $line)
+        while($flag <= ($line*4))
         {
             $seq = <I>;
             print T "$seq";
