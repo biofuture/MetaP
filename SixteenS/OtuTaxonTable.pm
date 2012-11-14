@@ -9,7 +9,7 @@
 package SixteenS::OtuTaxonTable;
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(generate_otutable generate_taxontable);
+our @EXPORT = qw(generate_otutable generate_taxontable tax_otu gastscvmothurotu);
 
 use strict;
 sub generate_otutable{
@@ -56,10 +56,10 @@ sub generate_otutable{
     die "Not the MetaP standard otu table\n" unless open(II,$ar[1]);
     die "Output to the destination file\n" unless open(OUT, ">$ar[3]");
     <II>;<II>;
-    my $log = "MetaP OTU table Version 1.0"; 
+    my $log = "QIIME format otu table"; 
     #push @{$ar[3]}, $log;
     print OUT "$log\n";
-    my $mark = "OTUID\t$samplelist\tTaxonomy";
+    my $mark = "OTUID\t$samplelist\tConsesus Lineage";
     #push @{$ar[3]}, $mark;
     print OUT "$mark\n";
     #print "$log\n$mark\n";
@@ -135,7 +135,8 @@ sub generate_taxontable{
         push @sampl, $k;
     }
 
-    my $head = join("\t", "Taxon",@sampl,"Rank");
+    #my $head = join("\t", "Taxon",@sampl,"Rank");
+    my $head = join("\t", "Taxon",@sampl);
     print T "$head\n";
     for my $key (sort keys %taxonnum)
     {
@@ -150,6 +151,7 @@ sub generate_taxontable{
                 print T "\t0";    
             }
         }
+=head
         if(exists $taxonrank{$key})
         {
             print T "\t$taxonrank{$key}";
@@ -157,10 +159,409 @@ sub generate_taxontable{
         {
             die "Wrong ID\n";    
         }
+=cut
         print T "\n";
     }
-}
+}#generate_taxontable
 
+sub tax_otu{
+
+   # die "perl $0 [Name.list] [uniq.name] [otu.seq.name][otu.tax][out.tablei.prefix]\n" unless(@ARGV == 5);
+   my @arg = @_;
+   die "$! \n" unless open(IN1,"$arg[0]");
+    die "$! \n" unless open(UN,"$arg[1]");
+    die "$! \n" unless open(IN2,"$arg[2]");
+    die "$! \n" unless open(IN3,"$arg[3]");
+    my $out1 = "$arg[4].Act.xls";
+    my $out2 = "$arg[4].Relative.xls";
+    die "$! \n" unless open(OT,">$out1");
+    die "$! \n" unless open(OUT,">$out2");
+
+###----------------------------------------
+#reads mapping to sample information stored in 
+#hash %SnRn
+    my %SnRn;
+    my %Sn;
+    while(<IN1>){
+        chomp;
+        my @m = split;
+        $SnRn{$m[1]} = $m[0];
+        $Sn{$m[0]} = 1;
+    }
+    close IN1;
+
+    my @sname = sort keys %Sn;
+
+    my %uniqab;
+    while(<UN>){
+        chomp;
+        my @m = split /\s+/;
+        my @tmp = split /\,/,$m[1];
+        $uniqab{$m[0]} = scalar(@tmp);
+    }
+    close UN;
+
+###---------------------------------------
+#reads mapping to OTU ID information stored 
+#in hash %otu and statistic OTU Sample abundance 
+#my %otu;
+    my %otus;
+    my %abund;
+    my %fsab;
+    my %otuid2seq;
+    while(<IN2>){
+        chomp;
+        my @m = split /\t/;
+        my @tmp = split /\,/,$m[1];
+        my $otun = "O_$tmp[0]";
+
+        $otuid2seq{$otun} = $m[1]; ###store the all the otu seq information for the &addab() subroutine
+
+            for my $id (@tmp){
+#$otu{$id} = $otun;
+
+                for my $sn (@sname){
+
+                    if($sn eq  $SnRn{$id}){
+                        $otus{$otun}{$sn}++;
+                    }else{
+                        $otus{$otun}{$sn} += 0;
+                    }
+
+                }
+            }
+        $abund{$otun} = $#tmp +1;
+
+##caclulate the first and second ab
+        my %catmp;
+        for(@tmp){
+            if(exists $uniqab{$_}){
+                $catmp{$_} = $uniqab{$_};
+            }
+        }
+        my $f = 0;
+        my $rate=0;
+        for my $ab (sort {$catmp{$b} <=> $catmp{$a}} keys %catmp){
+            $f++;
+
+            $rate = $catmp{$ab} / scalar(@tmp);
+            if($f == 1){
+                $fsab{$otun}{1} = "$catmp{$ab}\t$ab";
+            }elsif($f == 2){
+                $fsab{$otun}{2} = "$catmp{$ab}\t$ab";
+            }
+        }
+
+
+        if(! exists $fsab{$otun}{2}){
+            $fsab{$otun}{2} = "0\t0";
+        }
+
+        if(! exists $fsab{$otun}{1}){
+            die "w 111\n";
+        }
+
+        for(keys %catmp){
+            delete($catmp{$_});
+        }
+##---
+    }
+    close IN2;
+
+###----------------------------------------
+#statics tax infor
+#
+    my %taxheir;
+    my %taxon;
+    my %sabu;
+    my %taxfsab;
+    my $length = 0;
+    my $treads;
+    while(<IN3>){
+        chomp;
+        my @m = split /\t/;
+        my $otun = "O_$m[0]";
+        $treads += $abund{$otun};
+
+        $taxon{$m[1]}{$otun} = 1;
+
+        my @tmp = split /\;/,$m[1];
+        $length =scalar(@tmp) if(scalar(@tmp)>$length);
+        while(scalar(@tmp) > 0) {
+            my $tax = join ";",@tmp;
+
+            if(exists $abund{$otun}){
+
+                if(exists $taxheir{$tax}){
+                    $taxheir{$tax} += $abund{$otun};  
+                }else{
+                    $taxheir{$tax} = $abund{$otun}
+                }
+
+    #            &addab($tax,$otun);###add tax abund in every sample stored in %sabu
+    die "wrong $otun in addab\n" unless (exists $otuid2seq{$otun});
+    my @tmp = split /\,/,$otuid2seq{$otun};
+
+    for my $seqid (@tmp){
+        if(exists $SnRn{$seqid}){
+            for my $sn (@sname){
+                if($sn eq $SnRn{$seqid}){
+                    $sabu{$tax}{$sn} ++;
+                }else{
+                    $sabu{$tax}{$sn} += 0;
+                }
+            }
+
+        }else{
+            die "wrong $seqid in addab\n";
+        }
+    }
+
+###caclulate the first and second ab
+    my %catmp;
+    for(@tmp){
+        if(exists $uniqab{$_}){
+            $catmp{$_} = $uniqab{$_};
+        }
+    }
+    my $f = 0;
+
+
+    for my $ab (sort {$catmp{$b} <=> $catmp{$a}} keys %catmp){
+        $f++;
+
+        if($f == 1){
+            if(exists $taxfsab{$tax}{1}){
+                my @tm = split /\t/,$taxfsab{$tax}{1};
+                if($tm[0] > $catmp{$ab}){
+                    $taxfsab{$tax}{1} = "$catmp{$ab}\t$ab";
+                }else{
+
+                }
+
+            }else{
+                $taxfsab{$tax}{1} = "$catmp{$ab}\t$ab";
+            }
+
+        }elsif($f == 2){
+            if(exists $taxfsab{$tax}{2}){
+                my @tm = split /\t/,$taxfsab{$tax}{2};
+                if($tm[0] > $catmp{$ab}){
+                    $taxfsab{$tax}{2} = "$catmp{$ab}\t$ab";
+                }else{
+                }
+            }else{
+                $taxfsab{$tax}{2} = "$catmp{$ab}\t$ab";
+            }
+        }
+    }
+
+    if(! exists $taxfsab{$tax}{2}){
+        $taxfsab{$tax}{2} = "0\t0";
+    }
+
+    if(! exists $taxfsab{$tax}{1}){
+        die "w 111\n";
+    }
+    for(keys %catmp){
+        delete($catmp{$_});
+    }
+##addab
+
+            }else{
+                die "OTU wrong\n";
+            }
+            pop @tmp;
+        }
+    }
+    close IN3;
+
+###----------------------------------------
+##generate the relative abudance of every sample
+    my %Rotus;
+    my %otutotal;
+    for my $otun(keys %otus){
+        for my $sn(sort keys %{$otus{$otun}}){
+            $otutotal{$sn} += $otus{$otun}{$sn};
+        }
+    }
+
+    for my $otun(keys %otus){
+        for my $sn(sort keys %{$otus{$otun}}){
+            $Rotus{$otun}{$sn} = $otus{$otun}{$sn} / $otutotal{$sn};
+            $Rotus{$otun}{all} += $otus{$otun}{$sn} / $otutotal{$sn};
+        }
+    }
+
+
+###----------------------------------------
+#generate the table
+#
+    my $st = join("\t",@sname);
+    print  OT "0","\t"x($length+1),"all","\tfn\tFseqname\tsn\tSseqname\ttotal\t","$st\n";
+    print  OUT "0","\t"x($length+1),"all","\tfn\tFseqname\tsn\tSseqname\ttotal\t","$st\n";
+    for my $takey (sort keys %taxheir){
+        my @tmp = split /\;/,$takey;
+        my $rank = $#tmp + 1;
+        my $num = $length - scalar(@tmp) + 1;
+
+        die "$takey \n" unless($taxfsab{$takey}{1} && $taxfsab{$takey}{2} && $taxheir{$takey});
+        print OT $rank,"\t"x(scalar(@tmp)),$tmp[-1],"\t"x($num+1),"$taxfsab{$takey}{1}\t$taxfsab{$takey}{2}\t","$taxheir{$takey}";
+
+        print OUT $rank,"\t"x(scalar(@tmp)),$tmp[-1],"\t"x($num),"$taxheir{$takey}","\n";
+        for my $si (@sname){
+            print OT "\t$sabu{$takey}{$si}";
+#print OUT "";
+        }
+        print OT "\n";
+#print OUT "\n";
+        if(exists $taxon{$takey}){
+            for my $otid (sort keys %{$taxon{$takey}}){
+                if(exists $otus{$otid}){
+                    print OT "OTU\t$rank","\t"x($length-1),"\t","$otid\_$takey";
+                    print OUT "OTU\t$rank","\t"x($length-1),"\t","$otid\_$takey";
+
+                    if(exists $fsab{$otid}){
+                        print OT "\t$fsab{$otid}{1}\t$fsab{$otid}{2}\t$abund{$otid}";
+                        print OUT "\t$fsab{$otid}{1}\t$fsab{$otid}{2}\t$Rotus{$otid}{all}";
+                    }else{
+                        die "wrong $otid\n";
+                    }
+
+                    for my $si (sort @sname){
+                        print OT "\t$otus{$otid}{$si}";
+                        print OUT "\t$Rotus{$otid}{$si}";
+                    }
+                    print OT "\n";
+                    print OUT "\n";
+                }else{
+                    die "wrong $otid\n";
+                }
+            }
+        }
+
+    }
+}#tax_otu
+
+sub gastscvmothurotu{
+    ##This function generate the old gast.csv from total gast tax file and dnaclut mothur format otu 
+    #1. input total.gast.tax
+    #2. MetaP.otu.table
+    #3. gast.csv
+    #4. mothur.otu
+
+    my @ar = @_;
+    die "$ar[1] $!\n" unless open(I2, "$ar[1]");
+    die "$ar[3] $! \n" unless open(T2,">$ar[3]");
+    <I2>;<I2>;
+    my %rep;
+    while(<I2>)
+    {
+        chomp;
+        my @tem = split /\s+/;
+        print T2 "$tem[1]\t$tem[5]\n";
+        $rep{$tem[1]} = 1;
+    }
+    close I2;
+    close T2;
+    
+    die "$ar[0] $!\n" unless open(I1, "$ar[0]");
+    die "$ar[2] $!\n" unless open(T1, ">$ar[2]");
+    <I1>;
+    while(<I1>)
+    {
+        chomp;
+        my @tm = split(/\s+/,$_);
+        if(exists $rep{$tm[0]})
+        {
+            print T1 "$tm[0]\t$tm[1]\n";    
+        }
+    }
+    close I1;
+    close T1;
+}#gastcsvmothurotu
+
+
+
+
+=head
+###--------------
+#sub input the abundance infor of tax into hash %sabu for every sample and %taxfsab
+##
+sub addab{
+
+    my ($tax,$otun) = @_;
+    die "wrong $otun in addab\n" unless (exists $otuid2seq{$otun});
+    my @tmp = split /\,/,$otuid2seq{$otun};
+
+    for my $seqid (@tmp){
+        if(exists $SnRn{$seqid}){
+            for my $sn (@sname){
+                if($sn eq $SnRn{$seqid}){
+                    $sabu{$tax}{$sn} ++;
+                }else{
+                    $sabu{$tax}{$sn} += 0;
+                }
+            }
+
+        }else{
+            die "wrong $seqid in addab\n";
+        }
+    }
+
+###caclulate the first and second ab
+    my %catmp;
+    for(@tmp){
+        if(exists $uniqab{$_}){
+            $catmp{$_} = $uniqab{$_};
+        }
+    }
+    my $f = 0;
+
+
+    for my $ab (sort {$catmp{$b} <=> $catmp{$a}} keys %catmp){
+        $f++;
+
+        if($f == 1){
+            if(exists $taxfsab{$tax}{1}){
+                my @tm = split /\t/,$taxfsab{$tax}{1};
+                if($tm[0] > $catmp{$ab}){
+                    $taxfsab{$tax}{1} = "$catmp{$ab}\t$ab";
+                }else{
+
+                }
+
+            }else{
+                $taxfsab{$tax}{1} = "$catmp{$ab}\t$ab";
+            }
+
+        }elsif($f == 2){
+            if(exists $taxfsab{$tax}{2}){
+                my @tm = split /\t/,$taxfsab{$tax}{2};
+                if($tm[0] > $catmp{$ab}){
+                    $taxfsab{$tax}{2} = "$catmp{$ab}\t$ab";
+                }else{
+                }
+            }else{
+                $taxfsab{$tax}{2} = "$catmp{$ab}\t$ab";
+            }
+        }
+    }
+
+    if(! exists $taxfsab{$tax}{2}){
+        $taxfsab{$tax}{2} = "0\t0";
+    }
+
+    if(! exists $taxfsab{$tax}{1}){
+        die "w 111\n";
+    }
+    for(keys %catmp){
+        delete($catmp{$_});
+    }
+##---
+}#addab
+=cut
 
 1;
 
+__END__

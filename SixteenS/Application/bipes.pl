@@ -2,7 +2,7 @@
 
 use strict;
 BEGIN {  
-    unshift @INC, "/Users/jiangxiaotao/Documents/MetaP/";
+    unshift @INC, "/Users/jiangxiaotao/Documents/MetaP";
 }
 
 use SixteenS::QualityControl::Bipes;

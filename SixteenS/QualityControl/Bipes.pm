@@ -403,6 +403,9 @@ sub overlap_fq{
     unless(-d "overlap")
     {
         `mkdir overlap`;
+    }else
+    {
+        `rm -rf overlap; mkdir overlap`;
     }
     split_file($ar[0], $ar[2]);
     split_file($ar[1], $ar[2]);
@@ -746,6 +749,8 @@ sub primer_cut{
     unless (-d "primercut")
     {
         `mkdir primercut`;
+    }else{
+        `rm -rf primercut; mkdir primercut`;
     }
     
     ##make use of multi thread method to paralell overlap
@@ -783,13 +788,15 @@ sub primer_cut{
     
     find_fa_new("$op.primer_0_error_and_40_70_mismatch.names", "$op.primercut.total.fa","$op");
     
-    unless(-d "sample_seq")
-    {
-    `mkdir sample_seq`; 
-    }
+#    unless(-d "sample_seq")
+#    {
+#    `mkdir sample_seq`; 
+#    }
 
-    my $uqna = "$uq.unique.name";
-
+    my $uqna = $ar[1];
+    $uqna =~ s/\.fa$//;
+    $uqna = "$uqna.names";
+    #print "$ar[3]\n$uqna\n$op/qualified.unique.tag.clean.fa\n$op.barcodeprimer\n";
     barcode_select_samples($ar[3], $uqna, "$op/qualified.unique.tag.clean.fa","$op.barcodeprimer");
 
 }#primer_cut
@@ -813,6 +820,7 @@ chomp;
 my @otu = split/\s+/;
 $seqname{$otu[0]} = $otu[1];
 }
+close FILE2;
 
 my %fasta;
 while(<FILE3>)
@@ -825,7 +833,7 @@ my $seq = <FILE3>;
 $fasta{$name} = $seq;
 }
 }
-
+close FILE3;
 
 my @dir = split/\//,$ar[0];
 pop @dir;
@@ -882,7 +890,7 @@ while (<II>)
 #   my $backbarcode = uc($b1);
 #       print $forbarcode,"\n";
 ##  print "flength:$flength\tforebarcode:$forbarcode\tblength:$blength\tbackbarcode:$backbarcode\n";
-        print $column[2],"\n",$column[4],"\n";  
+#       print $column[2],"\n",$column[4],"\n";  
         open FILE4,"$ar[3]" || die "can not open FILE4:$!";
         while(<FILE4>)
         {
@@ -914,15 +922,15 @@ while (<II>)
                     }
                 }
             } 
+ #               print "here\n";
         }
+        close FILE4;
     } 
 }
+close FILE2;
 }
 
 close FILE1;
-close FILE2;
-close FILE3;
-close FILE4;
 }#barcode_select_samples
 
 1;

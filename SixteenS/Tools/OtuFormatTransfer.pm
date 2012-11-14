@@ -42,6 +42,8 @@ sub transfer_tscotu{
     }
     close I;
     die "Not the tsc Otu results \n" unless open(II,"$file[2]");
+    die "$! \n" unless open(QIF, ">$file[3]");
+    print QIF "MetaP Format\nOTU_ID\tRepresentTag\tRepresentSeq\tUniqueNumber\tTotalNumber\tComposition\n";
     while(<II>)
     {
         chomp;
@@ -80,8 +82,8 @@ sub transfer_tscotu{
         $comp =~ s/^\,//;
         die "wrong $abna\n" unless(exists $uniquefa2seq{$abna});
         my $oneotu = join("\t",$otun,$abna,$uniquefa2seq{$abna},$uniqseqn,$tonu,$comp,);
-        #print "$oneotu\n";
-        push @{$file[3]}, $oneotu; 
+        print QIF "$oneotu\n";
+       # push @{$file[3]}, $oneotu; 
     }#while
 }
 

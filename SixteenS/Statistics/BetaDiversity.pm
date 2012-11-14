@@ -3,7 +3,7 @@ use strict;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(cluster heatmap_cluster ch_cluster_index);
+our @EXPORT = qw(ordination cluster heatmap_cluster ch_cluster_index);
 
 use SixteenS::Tools::Matrix;
 
@@ -24,20 +24,26 @@ sub ordination{
 
     my @tm = @_;
     my $str = <<STDRS;
-mytable <- read.table(file="$tm[0]", header=TRUER)
+mytable <- read.table(file="$tm[0]", header=TRUER,row.names=1)
 mygroup <- read.table(file="$tm[1]")
 library(vegan)
 library(ggplot2)
-pdim <- dim(mytable)
+myt <- t(mytable)
+gd <- dim(mygroup)
+na <- mygroup[,2]
+na <- na[2:gd[1]]
+Categorie <- na;
+
+pdim <- dim(myt)
 nr <- pdim[1]
 nc <- pdim[2]
 
 pdf("$tm[0].pca12.pdf")
-pr_pca <- rda(mytable[,1:(nc-1)])
+pr_pca <- rda(myt)
 perc <- pr_pca\$CA\$eig / pr_pca\$CA\$tot.chi
 p1p2score <- scores(pr_pca, choices = c(1,2), dis="sites")
-withcaterp1p2 <- data.frame(p1p2score,profile[,nc])
-colnames(withcaterp1p2)[3] <- colnames(profile)[nc]
+withcaterp1p2 <- data.frame(p1p2score,Categorie)
+colnames(withcaterp1p2)[3] <- "Categories"
 xl <- paste("PC1(",(perc[1]*10000)%/%100,"%)",sep="")
 yl <- paste("PC2(", (perc[2]*10000)%/%100,"%)",sep="")
 qplot(PC1,PC2,data=withcaterp1p2,xlab=xl,ylab=yl,colour=Categorie,size=I(6))
@@ -81,7 +87,7 @@ library(vegan)
 tmy <- t(mytable)
 mdist <- vegdist(tmy)
 clustF <- hclust(mdist, method="$tm[1]")
-pdf(file="$tm[0].pdf")
+pdf(file="$tm[0].clust.$tm[1].pdf")
 plot(clustF,hang=-1,main="Hierachical clustering tree")
 dev.off()
 STDIN
