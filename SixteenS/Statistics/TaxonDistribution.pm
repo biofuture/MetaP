@@ -118,14 +118,13 @@ mytable <- read.table(file="$ar[0]", header=TRUE, row.names=1)
 library(PerformanceAnalytics)
 pdf("$ar[0].barchart.$ar[1].pdf")
 tm <- t(mytable)
-chart.StackedBar(tm, date.format="%Y", cex.legend = 0.4, colorset=rainbow12equal,main="Barchart of $ar[1]", ylab="Percent of Total", xlab="Sample ID", unstack=FALSE)
+chart.StackedBar(tm, date.format="%Y", cex.legend = 0.7, colorset=rainbow12equal,main="Barchart of $ar[1]", ylab="Percent of Total", xlab="Sample ID", unstack=FALSE)
 dev.off()
 STD
 
 `R CMD BATCH $or`;
 
 }#taxon_distribution
-
 
 
 1;

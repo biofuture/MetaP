@@ -9,7 +9,8 @@
 package SixteenS::OtuTaxonTable;
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(generate_otutable generate_taxontable tax_otu gastscvmothurotu);
+our @EXPORT = qw(generate_otutable generate_taxontable tax_otu gastscvmothurotu otu_normalized1);
+use SixteenS::Tools::Matrix;
 
 use strict;
 sub generate_otutable{
@@ -481,86 +482,39 @@ sub gastscvmothurotu{
     close T1;
 }#gastcsvmothurotu
 
+sub otu_normalized1{
+#This function generated the normalized otu table for PCA nalysis 
+#and clustering analysis
+#1. the otu table of QIIME format 
+#2. output otu table prefix 
 
+    my @ar = @_;
+    die "can not open $ar[0] $! \n" unless open(I, "$ar[0]");
+    my $outA = "$ar[1].act.xls";
 
-
-=head
-###--------------
-#sub input the abundance infor of tax into hash %sabu for every sample and %taxfsab
-##
-sub addab{
-
-    my ($tax,$otun) = @_;
-    die "wrong $otun in addab\n" unless (exists $otuid2seq{$otun});
-    my @tmp = split /\,/,$otuid2seq{$otun};
-
-    for my $seqid (@tmp){
-        if(exists $SnRn{$seqid}){
-            for my $sn (@sname){
-                if($sn eq $SnRn{$seqid}){
-                    $sabu{$tax}{$sn} ++;
-                }else{
-                    $sabu{$tax}{$sn} += 0;
-                }
-            }
-
-        }else{
-            die "wrong $seqid in addab\n";
-        }
+    #my $outR = "$prefix.relative.xls";
+    die "can not write to $outA $! \n" unless open(TM,">$outA");
+    #die "Can not write to $outR $! \n" unless open(TR, ">$outR");
+    <I>;
+    my $head = <I>;
+    chomp($head);
+    my @tem = split(/\t/,$head); pop @tem; shift @tem;
+    $head = join("\t", "",@tem);
+    #print "$head\n";
+    print TM "$head\n";
+    while(<I>)
+    {
+        my @tm = split(/\t/,$_);
+        pop @tm;
+        my $o = join("\t",@tm);
+        print TM "$o\n";
     }
+    close I;
+    close TM;
+    die "file $outA not exists $! \n" unless(-e "$outA");
+    normalized($outA);
 
-###caclulate the first and second ab
-    my %catmp;
-    for(@tmp){
-        if(exists $uniqab{$_}){
-            $catmp{$_} = $uniqab{$_};
-        }
-    }
-    my $f = 0;
-
-
-    for my $ab (sort {$catmp{$b} <=> $catmp{$a}} keys %catmp){
-        $f++;
-
-        if($f == 1){
-            if(exists $taxfsab{$tax}{1}){
-                my @tm = split /\t/,$taxfsab{$tax}{1};
-                if($tm[0] > $catmp{$ab}){
-                    $taxfsab{$tax}{1} = "$catmp{$ab}\t$ab";
-                }else{
-
-                }
-
-            }else{
-                $taxfsab{$tax}{1} = "$catmp{$ab}\t$ab";
-            }
-
-        }elsif($f == 2){
-            if(exists $taxfsab{$tax}{2}){
-                my @tm = split /\t/,$taxfsab{$tax}{2};
-                if($tm[0] > $catmp{$ab}){
-                    $taxfsab{$tax}{2} = "$catmp{$ab}\t$ab";
-                }else{
-                }
-            }else{
-                $taxfsab{$tax}{2} = "$catmp{$ab}\t$ab";
-            }
-        }
-    }
-
-    if(! exists $taxfsab{$tax}{2}){
-        $taxfsab{$tax}{2} = "0\t0";
-    }
-
-    if(! exists $taxfsab{$tax}{1}){
-        die "w 111\n";
-    }
-    for(keys %catmp){
-        delete($catmp{$_});
-    }
-##---
-}#addab
-=cut
+}#otu_normalized1
 
 1;
 

@@ -29,7 +29,6 @@ sub fetch_fastainfo{
     $/ = "\n";
 }
 
-
 sub split_file{
     ##split_file split fastq file into n parts based on line
     ##the output file were in the same dir with the $file

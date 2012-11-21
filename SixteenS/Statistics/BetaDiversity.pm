@@ -24,20 +24,12 @@ sub ordination{
 
     my @tm = @_;
     my $str = <<STDRS;
-mytable <- read.table(file="$tm[0]", header=TRUER,row.names=1)
+mytable <- read.table(file="$tm[0]", header=TRUE,row.names=1)
 mygroup <- read.table(file="$tm[1]")
 library(vegan)
 library(ggplot2)
 myt <- t(mytable)
-gd <- dim(mygroup)
-na <- mygroup[,2]
-na <- na[2:gd[1]]
-Categorie <- na;
-
-pdim <- dim(myt)
-nr <- pdim[1]
-nc <- pdim[2]
-
+Categorie <- mygroup[,2]
 pdf("$tm[0].pca12.pdf")
 pr_pca <- rda(myt)
 perc <- pr_pca\$CA\$eig / pr_pca\$CA\$tot.chi
@@ -48,8 +40,7 @@ xl <- paste("PC1(",(perc[1]*10000)%/%100,"%)",sep="")
 yl <- paste("PC2(", (perc[2]*10000)%/%100,"%)",sep="")
 qplot(PC1,PC2,data=withcaterp1p2,xlab=xl,ylab=yl,colour=Categorie,size=I(6))
 dev.off()
-rm(p1p2score,withcaterp1p2,xl,yl)
-
+exit()
 STDRS
     my $rs = "$tm[0].R";
     die "$rs $!\n" unless open(T, ">$rs");

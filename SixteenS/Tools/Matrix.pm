@@ -27,7 +27,7 @@ sub normalized{
     close I;
 
     die "Normalized $!\n" unless open(I,"$tm[0]");
-    my $out = "$tm[0].normanized_1";
+    my $out = "$tm[0].normalized_1";
     die "OutPut file $out\n" unless open(T,">$out");
     print T "$head\n";
     <I>;
@@ -99,3 +99,5 @@ sub add_groupinfo{
 
 }#addgroup
 
+1;
+__END__

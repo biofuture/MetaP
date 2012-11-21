@@ -12,7 +12,7 @@ use strict;
 use SixteenS::Tools::SequenceProcess;
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(transfer_tscotu);
+our @EXPORT = qw(transfer_tscotu tran_tsc2mothur);
 
 sub transfer_tscotu{
     my @file = @_;
@@ -32,7 +32,7 @@ sub transfer_tscotu{
     die "Not the unique name file from tsc\n" unless (-e $file[1]) && open(I,$file[1]);
     my %uniquenumber;
     my %uniquecomp;
-    $/ = "\n";
+    #$/ = "\n";
     while(<I>)
     {
             chomp;
@@ -87,6 +87,80 @@ sub transfer_tscotu{
     }#while
 }
 
+sub tran_tsc2mothur{
+
+##This programme is written for transferring OTU format form tsc to mothur
+##The tsc input include the otu list file and the unique name file
+##The mothur otu format could be used for rarefaction analysis
+##Written by JXT 05/09/12 
+
+    #die "perl $0 <tsc otu list> <tsc unique name>  <tsc.unique.fa> <output mothur format otu>\n" unless (@ARGV == 4);
+    my @ar = @_;
+    die "$! \n" unless open(I,$ar[0]);
+    die "$! \n" unless open(II, $ar[1]);
+    die "$! \n" unless open(III, $ar[2]);
+    die "$! \n" unless open(T,">$ar[3]");
+
+    my %rep;
+    while(<II>)
+    {
+        chomp;
+        my @tem = split /\s+/;
+        $rep{$tem[0]} = $tem[2];
+    }
+    close II;
+
+    my %seq;
+    my $index = 0;
+    while(<III>)
+    {
+        chomp;
+        my @tem = split /\s+/;
+        my $na = $tem[0];
+        $na =~ s/^>//;
+        $seq{$index} = $na;
+        <III>;
+        $index++;
+    }
+    close III;
+
+    my $otunumber = 0;
+    my @lastn=();
+    while(<I>)
+    {
+        chomp;
+        $otunumber++;
+        my @tem = split /\s+/;
+        my @num = split(/\,/, $tem[2]);
+        my @tm = ();
+        for my $ink (@num)
+        {
+            if(exists $seq{$ink})
+            {
+                if(exists $rep{$seq{$ink}})
+                {
+                    push @tm , $rep{$seq{$ink}};
+                }
+                else
+                {
+                    die "wrong occured \n";
+                }
+            }
+            else
+            {
+                die "wrong occured ! \n";
+            }
+        }
+        my $jo = join(",", @tm);
+        push @lastn, $jo;
+    }
+    close I;
+    my $ot = join("\t",@lastn);
+    print  T "0.03\t$otunumber\t$ot\n";
+  
+}#tran_tsc2mothur
+
+
 sub transfer_uclustotu{
 
 }
@@ -106,3 +180,4 @@ sub transfer_dnaclustotu{
 
 
 1;
+__END__
