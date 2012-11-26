@@ -301,25 +301,25 @@ a4 <- aov(shannon ~ ginfo)
 shannoni <- TukeyHSD(a4)
 
 pdf("$of.Tukey_HSD.test.otu.pdf")
-par(mar=c(5,4,6,2))
+#par(mar=c(5,4,6,2))
 tes <- glht(a1, linfct=mcp(ginfo="Tukey"))
 plot(cld(tes, level=.05), col="yellow")
 dev.off()
 
 pdf("$of.Tukey_HSD.test.chao.pdf")
-par(mar=c(5,4,6,2))
+#par(mar=c(5,4,6,2))
 tes <- glht(a2, linfct=mcp(ginfo="Tukey"))
 plot(cld(tes, level=.05), col="yellow")
 dev.off()
 
 pdf("$of.Tukey_HSD.test.ace.pdf")
-par(mar=c(5,4,6,2))
+#par(mar=c(5,4,6,2))
 tes <- glht(a3, linfct=mcp(ginfo="Tukey"))
 plot(cld(tes, level=.05), col="yellow")
 dev.off()
 
 pdf("$of.Tukey_HSD.test.shannon.pdf")
-par(mar=c(5,4,6,2))
+#par(mar=c(5,4,6,2))
 tes <- glht(a4, linfct=mcp(ginfo="Tukey"))
 plot(cld(tes, level=.05), col="yellow")
 dev.off()
@@ -357,8 +357,6 @@ summary(a4)
 
 shannoni
 ##End
-
-exit()
 STD
  `R CMD BATCH --args $or`;
 
