@@ -1,0 +1,198 @@
+#!/usr/bin/perl -w
+use strict;
+
+use Getopt::Std;
+use File::Basename;
+use FindBin qw($Bin);
+
+BEGIN {  
+    my @dirset = split(/\//,$Bin);
+    pop(@dirset); pop(@dirset);
+    my $MetaPDir = join("/", @dirset);
+    unshift @INC, "$MetaPDir";
+}
+##using pm file-------------------------------------------------------------------------------
+use SixteenS::QualityControl::Uchime;
+use SixteenS::QualityControl::Bipes;
+use SixteenS::Tools::SequenceProcess;
+use SixteenS::OtuTaxonTable;#otu_normalized1
+use SixteenS::Tools::OtuFormatTransfer;
+use SixteenS::Statistics::TaxonDistribution;
+use SixteenS::Statistics::AlphaDiversity;
+use SixteenS::Statistics::BetaDiversity;
+
+my @dirset = split(/\//,$Bin);
+pop(@dirset); pop(@dirset);
+our $MetaPDir = join("/", @dirset);
+
+########################################
+##-h verbose usage information for this script
+########################################-------------------------------------------------------
+my  $usage = <<USE;
+    Author Xiao-tao JIANG
+    Email: biofuture.jiang\@gmail.com
+    Date 10/11/12
+    perl $0 -a <1.fq> -b <2.fq> -c <primer.txt> -d <sample info> -g <groups.xls> -n [threads number] -h [verbose] 
+    
+    -a  <1.fq>
+    -b  <2,fq>
+    -c  <primer file> the primer file contain the forward primer and the reverse primer
+    -d  <sample info> format of sample info please refer to the example
+    -g  <group file> the file contain the group information for groups
+    -n  [Threads number used when split file default 8]
+    -h  print this help information
+USE
+#######################################
+##BIPES quality control step for V6 data
+##use Bipes.pm
+#######################################--------------------------------------------------------
+my $opt_log = "runpipe.log";
+our($opt_a, $opt_b, $opt_c, $opt_d, $opt_n, $opt_h,  $opt_g);
+getopts('a:b:c:d:n:g:h');
+die "Can not write $!\n" unless open(LOG, ">$opt_log");
+my $date = localtime;
+$opt_n ||= 8;
+my $v6ref = "$MetaPDir/DB/refv6.fa";
+my $v6rtax = "$MetaPDir/DB/refv6.tax";
+
+if($opt_h || ($opt_a eq ""))
+{
+    die $usage;
+}
+print LOG "[1]. BIPES begain: ",$date=localtime,"\n";
+##overlap the pair-end fastq reads
+overlap_fq($opt_a, $opt_b, $opt_n);
+
+primer_cut($opt_c,"overlaped.total.pe.fa", $opt_n, $opt_d);
+
+print LOG "\tBIPES end: ", $date=localtime,"\n";
+
+########################################
+##chmiera sequences remove
+##use UCHIME
+########################################------------------------------------------------------------
+`ls sample/*/*.fa > bipes.clean.fa.list`;
+print LOG "[2]. UCHIME begain: ",$date = localtime,"\n";
+uchime("bipes.clean.fa.list");
+print LOG "\tUCHIME end: ",$date = localtime, "\n";
+my $nochfalist = "nochimera.fa.list";
+`ls nochimera/*/*.nochimera.fa > $nochfalist`;
+
+
+##rename of all the tags, generate the total clean fasta file
+##generate name list file
+rename_tags($nochfalist, "nochimerarename");
+
+########################################
+##Taxonomic assignment
+########################################-----------------------------------------------------------
+`mkdir gast; cd gast; ln -s ../nochimerarename/total.nochimera.fa`;
+print LOG "[3]. Gast Begin: ", $date = localtime, "\n";
+`perl  $MetaPDir/SixteenS/TaxonomyAssignment/gast_files/gast  -in gast/total.nochimera.fa -ref $v6ref -rtax $v6rtax -out gast/total.gast.tax > gast.tax.log`;
+print LOG "\tGast End: ", $date= localtime, "\n";
+
+########################################
+##OTU picking steps
+########################################-----------------------------------------------------------
+`mkdir tsc; cd tsc; ln -s ../nochimerarename/total.nochimera.fa`;
+print LOG "[4]. TSC otu picking Begin: ", $date= localtime, "\n";
+my $tsce = "$MetaPDir/bin/TSC_version_1.2_i86linux64";
+`$tsce  -i tsc/total.nochimera.fa -o tsc/total.nochimera.fa.tsc -n 8 -m al`;
+print LOG "\tTSC otu picking End: ", $date= localtime, "\n";
+
+########################################
+##Generate Otu table and taxon table
+########################################-----------------------------------------------------------
+#transfer tsc otu table into Qimme format for the convienent of the following analysis
+my $tscotu = "tsc/total.nochimera.fa.tsc_0.03_otu.al.list";
+my $tscfa = "tsc/total.nochimera.fa.tsc.unique.fa";
+my $tscna = "tsc/total.nochimera.fa.tsc.unique.name";
+my $MetaPotuf = "MetaP.otu.format";
+my $gast = "gast/total.gast.tax";
+print LOG "\tTransfer otu table format Begin:", $date=localtime,"\n";
+transfer_tscotu($tscfa, $tscna, $tscotu, $MetaPotuf);
+print LOG "\tTransfer otu table format End:", $date=localtime,"\n";
+
+##rank abundance curve
+rank_abundance($tscna);
+
+my $namelist = "nochimerarename/total.name.list";
+my $qiimeotuf = "QIIME.otu.table";
+my $taxontable = "Total.taxon.table";
+print LOG "[5]. Generate OTU table Begin:", $date=localtime,"\n";
+generate_otutable($namelist, $MetaPotuf, $gast,$qiimeotuf);
+
+generate_taxontable($namelist, $gast, $taxontable );
+print LOG "\tOTU table and Taxon table generated:", $date=localtime,"\n\n";
+
+##Generate old tax-otu table by tax-otu-new.pl
+my $gastcsv = "rep.gast.csv";
+my $mothurotu = "rep.mothur.format.otu";
+gastscvmothurotu($gast,$MetaPotuf, $gastcsv, $mothurotu);
+print LOG "[6]. Start tax_otu\n";
+tax_otu($namelist, $tscna, $mothurotu, $gastcsv,"Tax-otu-table");
+ #test Tax-otu-table.Act.xls
+ die "$gastcsv $\n" unless(-e "Tax-otu-table.Act.xls");
+##Generate otu table and certain rank taxon table from Tax-otu-table
+my $otutable = "Tax-otu-table.Act.xls";
+my $phylum = "All.phylum";
+my $phylumnor1 = "All.phylum.normalized_1";
+my $genus = "All.genus";
+my $genusnor1 = "All.genus.normalized_1";
+my $otupre = "All.otu.table";
+my $nor1otutable = "All.otu.table.act.xls.normalized_1";
+substract_sprank($otutable, 2, $phylum);
+substract_sprank($otutable, 6, $genus);
+otu_normalized1($qiimeotuf,$otupre);
+
+print LOG "\tTax otu end:\n";
+
+##Do rarefaction analysis------------------------------------------------------------------------------
+print LOG "[7]. do rarefaction analysis, first normalize tags to a number ", $date=localtime,"\n";
+#$namelist, dir, tsc execution
+my $normadir = "normalizedrarefaction";
+#tsc and rarefaction
+tsc_mothurbatch($nochfalist, $normadir, $tsce);
+#merge generate rarefaction table and summary xls and table
+my $rareflist = "rar.f.list";
+my $raresumlist = "rar.sum.list";
+`ls $normadir/tsc/*.rarefaction > $rareflist`;
+`ls $normadir/tsc/*.summary > $raresumlist`;
+my $rarefxls = "Rarefaction.xls";
+my $raresumxls = "Rarefaction.summary.xls";
+my $raresumtable = "Rarefaction.summary.table";
+generate_raretable($rareflist, $rarefxls);
+generate_alphaindex($raresumlist, $raresumxls, $raresumtable);
+##test the normality and equality of variance
+anova_posthoc($raresumxls, $opt_g);
+
+##rarefaction curve plot
+rarefaction_groups($rarefxls,$opt_g);
+box_rarefaction($rarefxls, $opt_g);
+print LOG "\trarefaction analysis end: ",$date=localtime,"\n";
+
+##barchart of phylum and genus distribution---------------------------------------------------------
+print LOG "[8]. Barchat phylum and genus distribution\n";
+barchart_taxon($phylumnor1, "phylum");
+barchart_taxon($genusnor1, "genus");
+print LOG "\tBarchat phylum and genus distribution end\n";
+
+##cluster analysis of OTUs table
+print LOG "[9]. Cluster plot\n";
+cluster($nor1otutable, "ward");
+
+##PCA of the OTUs table
+print LOG "[10]. PCA Plot by group\n",$date=localtime,"\n";
+ordination($nor1otutable,$opt_g);
+
+##Heatmap
+
+#LEfSe file 
+`mkdir LEfse; mv $taxontable LEfse/;`;
+#Unifrac file
+`mkdir UniFrac; mv $qiimeotuf UniFrac/; mv  `;
+##Using R to do plot -----------------------------------------------------------------------------
+print LOG "MetaP-V1.0 END:", $date=localtime,"\n";
+
+exit();
+#__END__
