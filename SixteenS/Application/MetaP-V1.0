@@ -20,6 +20,7 @@ use SixteenS::Tools::OtuFormatTransfer;
 use SixteenS::Statistics::TaxonDistribution;
 use SixteenS::Statistics::AlphaDiversity;
 use SixteenS::Statistics::BetaDiversity;
+use SixteenS::Tools::Matrix;#add_groupinfo
 
 my @dirset = split(/\//,$Bin);
 pop(@dirset); pop(@dirset);
@@ -182,15 +183,29 @@ print LOG "[9]. Cluster plot\n";
 cluster($nor1otutable, "ward");
 
 ##PCA of the OTUs table
-print LOG "[10]. PCA Plot by group\n",$date=localtime,"\n";
+print LOG "[10]. PCA Plot by group ",$date=localtime,"\n";
 ordination($nor1otutable,$opt_g);
 
 ##Heatmap
-
+print LOG "[11]. LEfSe begain:", $date=localtime,"\n";
 #LEfSe file 
-`mkdir LEfse; mv $taxontable LEfse/;`;
+`mkdir LEfSe; mv $taxontable LEfSe/;`;
+add_groupinfo("LEfSe/$taxontable", $opt_g);
+
+my $lefsei = "LEfSe/$taxontable.addgroup";
+my $lefsein = "$lefsei.in";
+`python $MetaPDir/bin/LEfSe/format_input.py $lefsei $lefsein -u 2 -o 1000000`;
+my $lefseres = "$lefsei.res";
+`python $MetaPDir/bin/LEfSe/run_lefse.py $lefsein $lefseres --min_c 3 -l 2`;
+`python $MetaPDir/bin/LEfSe/plot_res.py --format png $lefseres $lefseres.png`;
+my $lefsepdf = "$lefsei.pdf";
+`python $MetaPDir/bin/LEfSe/plot_cladogram.py --format pdf --dpi 300 $lefseres $lefsepdf`;
+`mkdir LEfSe/biomarkers_raw_images`;
+`python $MetaPDir/bin/LEfSe/plot_features.py $lefsein $lefseres LEfSe/biomarkers_raw_images/`;
+print LOG "\tLEfSe End: ", $date=localtime,"\n";
+
 #Unifrac file
-`mkdir UniFrac; mv $qiimeotuf UniFrac/; mv  `;
+#`mkdir UniFrac; mv $qiimeotuf UniFrac/; mv  `;
 ##Using R to do plot -----------------------------------------------------------------------------
 print LOG "MetaP-V1.0 END:", $date=localtime,"\n";
 

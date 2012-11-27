@@ -93,6 +93,8 @@ sub add_groupinfo{
      <I0>;
      while(<I0>)
      {
+         #print T1 $_;
+         s/\;/\|/g;
          print T1 $_;
     }
     close I0; close T1;
