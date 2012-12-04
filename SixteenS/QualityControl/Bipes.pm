@@ -809,7 +809,7 @@ sub barcode_select_samples{
 #4. barcodefile from primercut
 
 my @ar = @_;
-open FILE1,"$ar[0]" || die "can not open FILE1:$!";
+#open FILE1,"$ar[0]" || die "can not open FILE1:$!";
 open FILE2,"$ar[1]" || die "can not open FILE2:$!";
 open FILE3,"$ar[2]" || die "can not open FILE3:$!";
 
@@ -835,38 +835,40 @@ $fasta{$name} = $seq;
 }
 close FILE3;
 
-my @dir = split/\//,$ar[0];
-pop @dir;
-my $prefix;
-if ($#dir >=0)
-{
-$prefix = join "/",@dir;
+#my @dir = split/\//,$ar[0];
+#pop @dir;
+#my $prefix;
+#if ($#dir >=0)
+#{
+#$prefix = join "/",@dir;
 ##print "$prefix\n";
-}
-else
-{
-$prefix = 1;
-}
-while(<FILE1>)
-{
+#}
+#else
+#{
+#$prefix = 1;
+#}
+
+#while(<FILE1>)
+#{
 ## print "$_\n";die;
-chomp;
-my @m = split/\./;
-pop @m;
-my $dirnew = join ".",@m;
+#chomp;
+#my @m = split/\./;
+#pop @m;
+#my $dirnew = join ".",@m;
 ##print "$dirnew\n";die;
-system ("mkdir $dirnew");
-if (!($prefix eq 1 ))
-{
-my $file = "$prefix\/$_";
-open II,"$file" || die "can not open II:$!";
+#system ("mkdir $dirnew");
+system("mkdir sample");
+#if (!($prefix eq 1 ))
+#{
+#my $file = "$prefix\/$_";
+#open II,"$file" || die "can not open II:$!";
 ##print "$file\n";
-}
-else
-{
-    open II,"$_" || die "can not open II:$!";
+#}
+#else
+#{
+    open II,"$ar[0]" || die "can not open II:$!";
 ##print "cwd:$_\n";
-}
+#}
 <II>;
 while (<II>)
 {
@@ -875,7 +877,8 @@ while (<II>)
     my @column = split/\t/;
     if ($#column == 5)
     {
-        my $dir = "$dirnew\/$column[-1]";
+        #my $dir = "$dirnew\/$column[-1]";
+        my $dir = "sample\/$column[-1]";
         system ("mkdir $dir");
         my $out = "$dir\/$column[-1].tag.clean.fa";
 ##print "$out\n";die;
@@ -928,9 +931,9 @@ while (<II>)
     } 
 }
 close FILE2;
-}
+#}
 
-close FILE1;
+#close FILE1;
 }#barcode_select_samples
 
 1;

@@ -9,5 +9,5 @@ BEGIN {
     unshift @INC, "$MetaPDir";
 }
 use  SixteenS::QualityControl::Uchime;
-die "perl $0 <fa.list>\n" unless (@ARGV<0);
-uchime("$ARGV[0]");
+die "perl $0 <fa.list>\n" unless (@ARGV == 1);
+uchime($ARGV[0]);

@@ -40,7 +40,6 @@ my  $usage = <<USE;
     -b  <2,fq>
     -c  <primer file> the primer file contain the forward primer and the reverse primer
     -d  <sampleinfo list> format of sample info please refer to the example
-    -p  <sample info>
     -g  <group file> the file contain the group information for groups
     -n  [Threads number used when split file default 8]
     -h  print this help information
@@ -50,18 +49,18 @@ USE
 ##use Bipes.pm
 #######################################--------------------------------------------------------
 my $opt_log = "runpipe.log";
-our($opt_a, $opt_b, $opt_c, $opt_d, $opt_n, $opt_h,  $opt_g, $opt_p);
+our($opt_a, $opt_b, $opt_c, $opt_d, $opt_n, $opt_h,  $opt_g)="";
 getopts('a:b:c:d:n:g:p:h');
 die "Can not write $!\n" unless open(LOG, ">$opt_log");
 my $date = localtime;
 $opt_n ||= 8;
 my $v6ref = "$MetaPDir/DB/refv6.fa";
 my $v6rtax = "$MetaPDir/DB/refv6.tax";
-
 if($opt_h || ($opt_a eq ""))
 {
     die $usage;
 }
+
 print LOG "[1]. BIPES begain: ",$date=localtime,"\n";
 ##overlap the pair-end fastq reads
 overlap_fq($opt_a, $opt_b, $opt_n);
@@ -89,7 +88,7 @@ rename_tags($nochfalist, "nochimerarename");
 
 ##reads summary statistics
 my $sumpre = "Reads_summary";
-get_seqsummary($opt_a, $opt_b, $opt_p, $qcbipes, $nochfalist, $sumpre);
+get_seqsummary($opt_a, $opt_b, $opt_d, $qcbipes, $nochfalist, $sumpre);
 
 ########################################
 ##Taxonomic assignment
