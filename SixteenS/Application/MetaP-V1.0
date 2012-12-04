@@ -219,8 +219,8 @@ print LOG "MetaP-V1.0 END:", $date=localtime,"\n";
 ###-----------------------------------------------------------------------------------------------
 ##The following pipe will generate a html document to integrate all the formall results
 ##
-my $htmldoc = "Project.report.html";
-die "$htmldoc $!\n" unless open(HTML, ">$htmldoc");
+#my $htmldoc = "Project.report.html";
+#die "$htmldoc $!\n" unless open(HTML, ">$htmldoc");
 ##[1]. Statistic the backgroud information
 
 exit();
