@@ -1,0 +1,58 @@
+
+R version 2.15.1 (2012-06-22) -- "Roasted Marshmallows"
+Copyright (C) 2012 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+R是自由软件，不带任何担保。
+在某些条件下你可以将其自由散布。
+用'license()'或'licence()'来看散布的详细条件。
+
+R是个合作计划，有许多人为之做出了贡献.
+用'contributors()'来看合作者的详细情况
+用'citation()'会告诉你如何在出版物中正确地引用R或R程序包。
+
+用'demo()'来看一些示范程序，用'help()'来阅读在线帮助文件，或
+用'help.start()'通过HTML浏览器来看帮助文件。
+用'q()'退出R.
+
+[原来保存的工作空间已还原]
+
+> pdf("Rarefaction.xls.rarefaction.1.pdf");
+>  matr <- read.table(file="Rarefaction.xls",sep="\t",header=T);
+>  maxd <- 1; 
+>  for(j in 2:dim(matr)[2]){ 
++ tem <- matr[,j] 
++ tem <- tem[!is.na(tem)]; if(maxd < max(tem)){ maxd <- max(tem)} 
++  }  
+>  y <- matr[,2]; y <- y[!is.na(y)]; x <- matr[,1]; x <- x[1:length(y)]; 
+> plot(x,y,type='l',col='white',ylim=c(0,maxd),xlim=c(0,max(matr[,1])), xlab="Number of Sequences", ylab="Number of OTUS",main="Rarefaction Curves For Groups")
+> selectmatr <- matr[c("AC1","AC2","AC3","AC4")]
+>             coln <- dim(selectmatr)[2]
+> #cl <- rgb(10, (0:(coln-1))/coln,127.5*1,max=255)
+>                 for(i in 1:coln){ 
++                     y <- selectmatr[,i] 
++                         y <- y[!is.na(y)]
++                         x <- matr[,1]
++                         x <- x[1:length(y)]
++                         points(x,y, col=palette()[1],type='l') 
++                 }
+> selectmatr <- matr[c("AM1","AM2","AM3","AM4")]
+>             coln <- dim(selectmatr)[2]
+> #cl <- rgb(20, (0:(coln-1))/coln,127.5*1,max=255)
+>                 for(i in 1:coln){ 
++                     y <- selectmatr[,i] 
++                         y <- y[!is.na(y)]
++                         x <- matr[,1]
++                         x <- x[1:length(y)]
++                         points(x,y, col=palette()[2],type='l') 
++                 }
+> 
+> legend("topleft",c("AC","AM"),pch=16, col=c(palette()[1:3]),title="Sample Group")
+> dev.off()
+null device 
+          1 
+> 
+> proc.time()
+ 用户  系统  流逝 
+0.431 0.029 0.456 

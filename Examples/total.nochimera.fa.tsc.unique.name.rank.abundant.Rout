@@ -1,0 +1,34 @@
+
+R version 2.15.1 (2012-06-22) -- "Roasted Marshmallows"
+Copyright (C) 2012 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+R是自由软件，不带任何担保。
+在某些条件下你可以将其自由散布。
+用'license()'或'licence()'来看散布的详细条件。
+
+R是个合作计划，有许多人为之做出了贡献.
+用'contributors()'来看合作者的详细情况
+用'citation()'会告诉你如何在出版物中正确地引用R或R程序包。
+
+用'demo()'来看一些示范程序，用'help()'来阅读在线帮助文件，或
+用'help.start()'通过HTML浏览器来看帮助文件。
+用'q()'退出R.
+
+[原来保存的工作空间已还原]
+
+> #This is the R script for rank abundant curves
+> myvector <- read.table(file="rank.list")
+> len <- dim(myvector)[1]
+> x <- 1:len
+> y <- as.vector(myvector[,1])
+> pdf("tsc/total.nochimera.fa.tsc.unique.name.rank.abundance.pdf")
+> plot(x,log10(y),type="l", main="Rank abundance curve", xlab="Rank number", ylab="Relative abundance of unique tags (Log10)")
+> dev.off()
+null device 
+          1 
+> 
+> proc.time()
+ 用户  系统  流逝 
+0.397 0.032 0.558 

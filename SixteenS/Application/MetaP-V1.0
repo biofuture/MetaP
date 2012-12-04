@@ -21,6 +21,7 @@ use SixteenS::Statistics::TaxonDistribution;
 use SixteenS::Statistics::AlphaDiversity;
 use SixteenS::Statistics::BetaDiversity;
 use SixteenS::Tools::Matrix;#add_groupinfo
+use SixteenS::Statistics::ReadsSummary;
 
 my @dirset = split(/\//,$Bin);
 pop(@dirset); pop(@dirset);
@@ -33,12 +34,13 @@ my  $usage = <<USE;
     Author Xiao-tao JIANG
     Email: biofuture.jiang\@gmail.com
     Date 10/11/12
-    perl $0 -a <1.fq> -b <2.fq> -c <primer.txt> -d <sample info> -g <groups.xls> -n [threads number] -h [verbose] 
+    perl $0 -a <1.fq> -b <2.fq> -c <primer.txt> -d <sampleinfo list> -p <sample info>  -g <groups.xls> -n [threads number] -h [verbose] 
     
     -a  <1.fq>
     -b  <2,fq>
     -c  <primer file> the primer file contain the forward primer and the reverse primer
-    -d  <sample info> format of sample info please refer to the example
+    -d  <sampleinfo list> format of sample info please refer to the example
+    -p  <sample info>
     -g  <group file> the file contain the group information for groups
     -n  [Threads number used when split file default 8]
     -h  print this help information
@@ -48,8 +50,8 @@ USE
 ##use Bipes.pm
 #######################################--------------------------------------------------------
 my $opt_log = "runpipe.log";
-our($opt_a, $opt_b, $opt_c, $opt_d, $opt_n, $opt_h,  $opt_g);
-getopts('a:b:c:d:n:g:h');
+our($opt_a, $opt_b, $opt_c, $opt_d, $opt_n, $opt_h,  $opt_g, $opt_p);
+getopts('a:b:c:d:n:g:p:h');
 die "Can not write $!\n" unless open(LOG, ">$opt_log");
 my $date = localtime;
 $opt_n ||= 8;
@@ -72,7 +74,8 @@ print LOG "\tBIPES end: ", $date=localtime,"\n";
 ##chmiera sequences remove
 ##use UCHIME
 ########################################------------------------------------------------------------
-`ls sample/*/*.fa > bipes.clean.fa.list`;
+my $qcbipes = "bipes.clean.fa.list";
+`ls sample/*/*.fa > $qcbipes`;
 print LOG "[2]. UCHIME begain: ",$date = localtime,"\n";
 uchime("bipes.clean.fa.list");
 print LOG "\tUCHIME end: ",$date = localtime, "\n";
@@ -83,6 +86,10 @@ my $nochfalist = "nochimera.fa.list";
 ##rename of all the tags, generate the total clean fasta file
 ##generate name list file
 rename_tags($nochfalist, "nochimerarename");
+
+##reads summary statistics
+my $sumpre = "Reads_summary";
+get_seqsummary($opt_a, $opt_b, $opt_p, $qcbipes, $nochfalist, $sumpre);
 
 ########################################
 ##Taxonomic assignment
@@ -208,6 +215,13 @@ print LOG "\tLEfSe End: ", $date=localtime,"\n";
 #`mkdir UniFrac; mv $qiimeotuf UniFrac/; mv  `;
 ##Using R to do plot -----------------------------------------------------------------------------
 print LOG "MetaP-V1.0 END:", $date=localtime,"\n";
+
+###-----------------------------------------------------------------------------------------------
+##The following pipe will generate a html document to integrate all the formall results
+##
+my $htmldoc = "Project.report.html";
+die "$htmldoc $!\n" unless open(HTML, ">$htmldoc");
+##[1]. Statistic the backgroud information
 
 exit();
 #__END__

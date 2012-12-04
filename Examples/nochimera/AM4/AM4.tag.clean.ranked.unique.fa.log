@@ -1,0 +1,16 @@
+uchime --input nochimera/AM4/AM4.tag.clean.ranked.unique.fa --uchimeout nochimera/AM4/AM4.tag.clean.ranked.unique.fa.out --uchimealns nochimera/AM4/AM4.tag.clean.ranked.unique.fa.alns --minchunk 20 --xn 7 --noskipgaps2 --log nochimera/AM4/AM4.tag.clean.ranked.unique.fa.log
+Started Mon Dec  3 17:23:19 2012
+Version 4.2.40
+
+    0.30  minh
+    7.00  xn
+    1.40  dn
+    1.00  xa
+    0.50  mindiv
+       2  maxp
+
+nochimera/AM4/AM4.tag.clean.ranked.unique.fa: 2/640 chimeras found (0.3%)
+
+Finished Mon Dec  3 17:23:22 2012
+Elapsed time 00:03
+Max memory 1.6Mb

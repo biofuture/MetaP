@@ -1,0 +1,2 @@
+label	sobs	chao	chao_lci	chao_hci	ace	ace_lci	ace_hci	jackknife	jackknife_lci	jackknife_hci	shannon	shannon_lci	shannon_hci	npshannon	simpson	simpson_lci	simpson_hci
+0.03	691.000000	3729.000000	2932.350046	4808.805702	9280.230052	8351.549730	10321.493305	4318.035330	3596.672921	5039.397739	6.319163	6.255185	6.383141	7.200154	0.001666	0.001227	0.002106

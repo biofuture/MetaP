@@ -2,8 +2,13 @@
 
 use strict;
 BEGIN {  
-    unshift @INC, "/Users/jiangxiaotao/Documents/MetaP";
+    use FindBin qw($Bin);
+    my @dirset = split(/\//,$Bin);
+    pop(@dirset); pop(@dirset);
+    my $MetaPDir = join("/", @dirset);
+    unshift @INC, "$MetaPDir";
 }
+
 
 use SixteenS::QualityControl::Bipes;
 die "perl $0 <1.fq> <2.fq> <primer.list> <output>\n" unless(@ARGV == 4);

@@ -1,0 +1,37 @@
+TSC begin: Mon Dec  3 17:23:47 2012
+
+1.	unique sort by abundance and init kmer data structure 
+	Sequences State
+	Maxlen	80	minlen	56	average lenght	61
+	unique cost time 0 s
+2.	start to do herarchical clustering for the high abundant sequences
+	[1] do kmer and needle caculation
+	cost time 0 s
+	[2] denoise by a mismatch 
+	cost time 0 s
+	[3] do hclust for the high abundant sequences 
+	Total sequences number 638
+	High abundant sequence 59
+	High abundant seeds 57
+	hclust total dist number need process 37	 NumberofNodes	37
+	cost time 0 s
+	hc_excute total cost time 0 s
+3.	start to do greedy heuristic clustering for the low abundant sequences
+	[1] preclust start 
+	Indel Number 2	Preclust1	51
+	cost time 0 s
+	[2]. left low abundant sequences 
+	HB OTU number 57
+	Needle processed low abundant seq 526
+	low abundant indel	1	Low preclust2 number	32
+	low abundant preclust left sequences   493	493
+	100	0	0	0	155
+	200	0	0	0	255
+	300	0	0	0	354
+	400	0	0	0	453
+	low ab cost time 0 s
+	seq num in otu 638	otu number 546
+	greedy clustering  total cost time 0 s
+Total cost time 0s
+TSC end: Mon Dec  3 17:23:47 2012
+

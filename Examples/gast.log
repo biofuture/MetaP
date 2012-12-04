@@ -1,5 +1,5 @@
-../16S/TaxonomyAssignment/gast_files/gast -in clone43.fa -ref ../DB/refv6.fa -rtax ../DB/refv6.tax -out clone43test (Tue Oct  9 15:48:48 2012)
-mothur "#unique.seqs(fasta=clone43.fa);"
-/Users/jiangxiaotao/Documents/MetaP/bin/usearch6.0.307_i86osx32 -db ../DB/refv6.fa  -gapopen 6I/1E -usearch_global clone43.unique.fa -strand plus -uc clone43.unique.fa.uc -maxaccepts 15 -maxrejects 200 -id 0.8
+/Users/jiangxiaotao/Documents/MetaP/SixteenS/TaxonomyAssignment/gast_files/gast -in gast/total.nochimera.fa -ref /Users/jiangxiaotao/Documents/MetaP/DB/refv6.fa -rtax /Users/jiangxiaotao/Documents/MetaP/DB/refv6.tax -out gast/total.gast.tax (Mon Dec  3 17:23:24 2012)
+mothur "#unique.seqs(fasta=gast/total.nochimera.fa);"
+/Users/jiangxiaotao/Documents/MetaP/bin/usearch6.0.307_i86osx32 -db /Users/jiangxiaotao/Documents/MetaP/DB/refv6.fa  -gapopen 6I/1E -usearch_global gast/total.nochimera.unique.fa -strand plus -uc gast/total.nochimera.unique.fa.uc -maxaccepts 15 -maxrejects 200 -id 0.8
 Assigning taxonomy
-rm clone43.unique.fa.uc
+rm gast/total.nochimera.unique.fa.uc

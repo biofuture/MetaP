@@ -1,0 +1,233 @@
+
+R version 2.15.1 (2012-06-22) -- "Roasted Marshmallows"
+Copyright (C) 2012 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-apple-darwin9.8.0/x86_64 (64-bit)
+
+R是自由软件，不带任何担保。
+在某些条件下你可以将其自由散布。
+用'license()'或'licence()'来看散布的详细条件。
+
+R是个合作计划，有许多人为之做出了贡献.
+用'contributors()'来看合作者的详细情况
+用'citation()'会告诉你如何在出版物中正确地引用R或R程序包。
+
+用'demo()'来看一些示范程序，用'help()'来阅读在线帮助文件，或
+用'help.start()'通过HTML浏览器来看帮助文件。
+用'q()'退出R.
+
+[原来保存的工作空间已还原]
+
+> indext <- read.table(file="Rarefaction.summary.xls.forR", header=TRUE);
+> attach(indext)
+> #for otu
+> library(car)
+载入需要的程辑包：MASS
+载入需要的程辑包：nnet
+> library(multcomp)
+载入需要的程辑包：mvtnorm
+载入需要的程辑包：survival
+载入需要的程辑包：splines
+> ginfo <- indext$group
+> 
+> ######Parametic test
+> #normally test qqplot
+> par(mfrow=c(2,2))
+> pdf("Rarefaction.summary.xls.forR.R.qqplot.pdf")
+> qqPlot(lm(sobs ~ ginfo), simulate=TRUE, main="Q-Q Plot 95% confidence envelope OTU(97%) number", labels=FALSE)
+> qqPlot(lm(chao ~ ginfo), simulate=TRUE, main="Q-Q Plot 95% confidence envelope Chao index", labels=FALSE)
+> qqPlot(lm(ace ~ ginfo), simulate=TRUE, main="Q-Q Plot 95% confidence envelope Ace index", labels=FALSE)
+> qqPlot(lm(shannon ~ ginfo), simulate=TRUE, main="Q-Q Plot 95% confidence envelope Shannon index", labels=FALSE)
+> dev.off()
+pdf 
+  2 
+> ## Equality of variance
+> ##Bartlett test
+> a1bartlett <- bartlett.test(sobs,ginfo)
+> a1levene <- leveneTest(sobs, ginfo)
+> a1 <- aov(sobs ~ ginfo)
+> otui <- TukeyHSD(a1)
+> 
+> #for chao
+> a2bartlett <- bartlett.test(chao,ginfo)
+> a2levene <- leveneTest(chao, ginfo)
+> a2 <- aov(chao ~ ginfo)
+> chaoi <- TukeyHSD(a2)
+> 
+> #for ace
+> a3bartlett <- bartlett.test(ace,ginfo)
+> a3levene <- leveneTest(ace, ginfo)
+> a3 <- aov(ace ~ ginfo)
+> acei <- TukeyHSD(a3)
+> 
+> #for shannon
+> a4bartlett <- bartlett.test(shannon,ginfo)
+> a4levene <- leveneTest(ace, ginfo)
+> a4 <- aov(shannon ~ ginfo)
+> shannoni <- TukeyHSD(a4)
+> 
+> pdf("Rarefaction.summary.xls.forR.Tukey_HSD.test.otu.pdf")
+> #par(mar=c(5,4,6,2))
+> tes <- glht(a1, linfct=mcp(ginfo="Tukey"))
+> plot(cld(tes, level=.05), col="yellow")
+> dev.off()
+pdf 
+  2 
+> 
+> pdf("Rarefaction.summary.xls.forR.Tukey_HSD.test.chao.pdf")
+> #par(mar=c(5,4,6,2))
+> tes <- glht(a2, linfct=mcp(ginfo="Tukey"))
+> plot(cld(tes, level=.05), col="yellow")
+> dev.off()
+pdf 
+  2 
+> 
+> pdf("Rarefaction.summary.xls.forR.Tukey_HSD.test.ace.pdf")
+> #par(mar=c(5,4,6,2))
+> tes <- glht(a3, linfct=mcp(ginfo="Tukey"))
+> plot(cld(tes, level=.05), col="yellow")
+> dev.off()
+pdf 
+  2 
+> 
+> pdf("Rarefaction.summary.xls.forR.Tukey_HSD.test.shannon.pdf")
+> #par(mar=c(5,4,6,2))
+> tes <- glht(a4, linfct=mcp(ginfo="Tukey"))
+> plot(cld(tes, level=.05), col="yellow")
+> dev.off()
+pdf 
+  2 
+> 
+> ##Following statistic data
+> a1bartlett
+
+	Bartlett test of homogeneity of variances
+
+data:  sobs and ginfo 
+Bartlett's K-squared = 0.4216, df = 1, p-value = 0.5161
+
+> 
+> a1levene 
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1   0.294 0.6072
+       6               
+> 
+> summary(a1)
+            Df Sum Sq Mean Sq F value Pr(>F)   
+ginfo        1  23653   23653   15.46 0.0077 **
+Residuals    6   9180    1530                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+> 
+> otui
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = sobs ~ ginfo)
+
+$ginfo
+         diff       lwr       upr     p adj
+AM-AC -108.75 -176.4273 -41.07269 0.0076957
+
+> 
+> a2bartlett
+
+	Bartlett test of homogeneity of variances
+
+data:  chao and ginfo 
+Bartlett's K-squared = 0.0217, df = 1, p-value = 0.8829
+
+> 
+> a2levene
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.1465 0.7151
+       6               
+> 
+> summary(a2)
+            Df  Sum Sq Mean Sq F value  Pr(>F)   
+ginfo        1 3268701 3268701   18.66 0.00499 **
+Residuals    6 1051123  175187                   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+> 
+> chaoi
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = chao ~ ginfo)
+
+$ginfo
+           diff      lwr      upr     p adj
+AM-AC -1278.417 -2002.61 -554.224 0.0049852
+
+> 
+> a3bartlett
+
+	Bartlett test of homogeneity of variances
+
+data:  ace and ginfo 
+Bartlett's K-squared = 1.7649, df = 1, p-value = 0.184
+
+> 
+> a3levene
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  3.6495 0.1047
+       6               
+> 
+> summary(a3)
+            Df   Sum Sq  Mean Sq F value Pr(>F)  
+ginfo        1 20023007 20023007   10.77 0.0168 *
+Residuals    6 11159276  1859879                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+> 
+> acei
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = ace ~ ginfo)
+
+$ginfo
+           diff       lwr       upr    p adj
+AM-AC -3164.096 -5523.736 -804.4565 0.016799
+
+> 
+> a4bartlett
+
+	Bartlett test of homogeneity of variances
+
+data:  shannon and ginfo 
+Bartlett's K-squared = 0.4231, df = 1, p-value = 0.5154
+
+> 
+> a4levene
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  3.6495 0.1047
+       6               
+> 
+> summary(a4)
+            Df  Sum Sq Mean Sq F value Pr(>F)  
+ginfo        1 0.18512 0.18512   12.19  0.013 *
+Residuals    6 0.09113 0.01519                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+> 
+> shannoni
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = shannon ~ ginfo)
+
+$ginfo
+            diff        lwr         upr     p adj
+AM-AC -0.3042367 -0.5174728 -0.09100067 0.0129651
+
+> ##End
+> 
+> proc.time()
+ 用户  系统  流逝 
+1.185 0.050 1.525 
