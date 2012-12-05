@@ -179,6 +179,7 @@ sub get_nochimeraseq{
                 }
             }
         }
+        close IV;
         %chimera=();
         %fasta=();
     }# foreach
