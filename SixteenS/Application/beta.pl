@@ -16,3 +16,9 @@ use SixteenS::Statistics::AlphaDiversity;
 use SixteenS::Statistics::BetaDiversity;
 use SixteenS::Tools::Matrix;#add_groupinfo
 
+die "perl $0 <otu.table.normalized.xls> <groups.xls> \n" unless(@ARGV==2);
+##cluster analysis of OTUs table
+cluster($ARGV[0], "ward");
+
+##PCA of the OTUs table
+ordination($ARGV[0],$ARGV[1]);
