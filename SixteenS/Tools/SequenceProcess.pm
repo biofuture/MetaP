@@ -37,7 +37,13 @@ sub split_file{
     my $totallines = 0;
     my $tem = `wc -l $file`;
     chomp($tem);
-    $totallines = (split(/\s+/,$tem))[1];
+    my @totallines = split(/\s+/,$tem);
+    if($totallines[1] =~ m/^\d+$/){
+        $totallines = $totallines[1];  ##Mac OS/X 
+    }else
+    {
+        $totallines = $totallines[0];  ##Linux 
+    }
 
     my $line = int( $totallines / ($num * 4 ) ); 
     #my $restline = $totallines - $num * $line;

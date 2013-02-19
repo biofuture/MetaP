@@ -1,0 +1,31 @@
+Introduction
+Metagenomics profiling (MetaP) is a bioinformatics analysis pipeline for Illumina pair-end sequencing of 16S rRNA tags. This pipeline integrated the basic sequence process steps and the following statistics and plotting procedure. MetaP was developed with Perl and R; it included some other third party software too. MetaP pipeline users can get the analysis done just by type one command. It can be download at https://github.com/biofuture/MetaP
+
+Installation
+In order to install MetaP on your Linux or Max OS/X, users need to clone the source code to local system and install some dependence software and libraries. MetaP was written in Perl and R did the plotting.
+
+[1]. Clone source code to your local computer
+https://github.com/biofuture/MetaP
+wget -no-check-certificate https://github.com/biofuture/MetaP/archive/master.zip
+unzip master
+
+[2]. Install TSC, Mothur, usearch, UCHIME, LEfSe and R to your computer
+	You can find these softwares by
+	Mothur http://www.mothur.org/wiki/Download_mothur
+Emboss package
+UCHIME http://drive5.com/uchime/uchime_download.html
+	TSC http://hwzhoulab.smu.edu.cn/paperdata/2011-05-05/39042.html
+	usearch http://www.drive5.com/uclust/downloads1_1_579.html
+	
+LEfSe	https://bitbucket.org/nsegata/lefse/src(The source already in $Dir/bin so you only have to install the dependencies package for R and python then LEfSe could be used)
+	
+	Then, link all the executable software to $Dir/bin/, MetaP will find these software under that directory, you should notice that there already have this executable file there, but that may not be the right version for your system. Please check $Dir /SixteenS/TaxonomyAssignment/gast_files/gast   line 116 for usearch6.0.
+
+[3]. Install the following R libraries.
+   To make the pipeline executable, the following R package should be installed£ºvegan 2.0, ade4, ggplot2, clusterSim, gplots, PerformanceAnalytics.
+
+[4]. Try the example given to you in the Example directory, please reads the report for the example
+
+Congratulations if it runs correctly, otherwise please check that you have all the dependences installed.
+ 
+

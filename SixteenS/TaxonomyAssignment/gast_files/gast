@@ -35,8 +35,9 @@
 ########################################
 use strict;
 use warnings;
+use FindBin qw($Bin);
 #use lib "/class/stamps-software/bin";
-use lib "/Users/jiangxiaotao/Documents/MetaP/SixteenS/TaxonomyAssignment/gast_files";
+use lib "$Bin";
 use Taxonomy;
 
 #######################################
@@ -109,8 +110,10 @@ my $mysqlimport_cmd = "mysqlimport -C -v -L -h $db_host $db_name ";
 my $gast_table;
 
 # USearch variables
-#my $usearch_cmd = "usearch6.0";
-my $usearch_cmd = "/Users/jiangxiaotao/Documents/MetaP/bin/usearch6.0.307_i86osx32";
+##my $usearch_cmd = "usearch6.0";
+my @dirss = split(/\//, $Bin); pop @dirss; pop @dirss; pop @dirss;
+my $mdir = join("/", @dirss);
+my $usearch_cmd = "$mdir/bin/usearch6.0.307_i86osx32";
 my $min_pctid = 0.80;
 my $max_accepts = 15;
 my $max_rejects = 200;

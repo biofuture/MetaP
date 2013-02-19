@@ -22,6 +22,7 @@ use SixteenS::Statistics::AlphaDiversity;
 use SixteenS::Statistics::BetaDiversity;
 use SixteenS::Tools::Matrix;#add_groupinfo
 use SixteenS::Statistics::ReadsSummary;
+#use SixteenS::Tools::Config;
 
 my @dirset = split(/\//,$Bin);
 pop(@dirset); pop(@dirset);
@@ -34,10 +35,10 @@ my  $usage = <<USE;
     Author Xiao-tao JIANG
     Email: biofuture.jiang\@gmail.com
     Date 10/11/12
-    perl $0 -a <1.fq> -b <2.fq> -c <primer.txt> -d <sampleinfo list> -p <sample info>  -g <groups.xls> -n [threads number] -h [verbose] 
+    perl $0 -a <1.fq> -b <2.fq> -c <primer.txt> -d <sampleinfo.xls> -g <groups.xls> -n [threads number] -h [verbose] 
     
     -a  <1.fq>
-    -b  <2,fq>
+    -b  <2.fq>
     -c  <primer file> the primer file contain the forward primer and the reverse primer
     -d  <sampleinfo list> format of sample info please refer to the example
     -g  <group file> the file contain the group information for groups
@@ -50,12 +51,16 @@ USE
 #######################################--------------------------------------------------------
 my $opt_log = "runpipe.log";
 our($opt_a, $opt_b, $opt_c, $opt_d, $opt_n, $opt_h,  $opt_g)="";
-getopts('a:b:c:d:n:g:p:h');
+getopts('a:b:c:d:n:g:h');
 die "Can not write $!\n" unless open(LOG, ">$opt_log");
 my $date = localtime;
 $opt_n ||= 8;
 my $v6ref = "$MetaPDir/DB/refv6.fa";
 my $v6rtax = "$MetaPDir/DB/refv6.tax";
+#my %vari;
+#my $conf = "../../Config";
+#read_config($conf, %vari); ##read all the variable into hash %vari
+
 if($opt_h || ($opt_a eq ""))
 {
     die $usage;
